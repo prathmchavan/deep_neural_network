@@ -27,14 +27,17 @@ class PredictionInput(BaseModel):
 @app.post("/predict/dnn")
 async def predict_dnn(data: PredictionInput):
     try:
-        # Convert input data to a NumPy array and reshape
-        input_data = np.array(data.feature_vector).reshape(1, -1)
-        
-        # Make predictions using the DNN model
-        prediction = dnn_model.predict(input_data)
-        return {"prediction": prediction.tolist()}
+        feature_vector = np.array(data.feature_vector)
+
+        input_data = feature_vector.reshape(1, -1)
+
+        prediction = np.round(dnn_model.predict(input_data).tolist()[0][0], 0)
+        return {"prediction": prediction}
+    except ValueError as ve:
+        raise HTTPException(status_code=422, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/")
 async def root():
